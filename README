@@ -1,0 +1,4 @@
+README for telemetry_gui
+DashBoardTest.py is the program for the GUI on the pi monitor.
+For this version, the pi communicates with the Arudino through Serial.
+Only data being extracted at the moment are battery voltage, battery temperature, and speed.
