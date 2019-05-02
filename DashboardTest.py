@@ -53,7 +53,7 @@ class DashBoard(object):
         self.label100 = Label(self.root, text = "       ", fg="green", bg="green")
         self.label80 = Label(self.root, text = "       ", fg="green", bg="green")
         self.label60 = Label(self.root, text = "       ", fg="green", bg="green")
-        self.label40 = Label(root, text = "       ", fg="green", bg="green")
+        self.label40 = Label(self.root, text = "       ", fg="green", bg="green")
         self.label20 = Label(self.root, text = "       ", fg="green", bg="green")
         self.labelBV = Label(self.root, font= ('times', 10), bg = 'white')
         self.labelBV.config(text = 'Battery Voltage')
