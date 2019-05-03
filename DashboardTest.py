@@ -3,17 +3,18 @@ import serial
 import RPi.GPIO as GPIO
 import time
 import threading
+from time import sleep
 
+temp = 0       #25C - 60C.
+gear = 0       #0=p, 1=r, 2=n, 3=d, 4=l
+voltage = 0    #56V max, 46V min; setting min threshold to 48V
+speed = 0
+ser = serial.Serial("/dev/ttyACM0", 9600) #change ACM number as found
+ser.baudrate = 9600
     
 class DashBoard(object):
     def _init_(self):
         self.root = None
-        
-        self.temp = 0         #25C - 60C.
-        self.gear = 0         #0=0, 1=r, 2=n, 3=d, 4=l
-        self.voltage = 0      #56V max, 46V min; setting min threshold to 48V
-        self.speed1 = ' '
-        self.speed2 = 0
         
         self.label100 = None
         sel.label80 = None
@@ -39,6 +40,8 @@ class DashBoard(object):
         
         self.Read_thread = None
         self.UpdateGUI_thread = None
+
+        
               
     def initScreen(self):
         self.root = Tk() #Create GUI window
@@ -102,31 +105,32 @@ class DashBoard(object):
         
         
     def update_GearShift(self):
-        if (self.gear == 0):
+        global gear
+        if (gear == 0):
             self.park.config(bg = 'gray')
             self.reverse.config(bg = 'white')
             self.neutral.config(bg = 'white')
             self.drive.config(bg = 'white')
             self.low.config(bg = 'white')
-        elif (self.gear == 1):
+        elif (gear == 1):
             self.park.config(bg = 'white')
             self.reverse.config(bg = 'gray')
             self.neutral.config(bg = 'white')
             self.drive.config(bg = 'white')
             self.low.config(bg = 'white')
-        elif (self.gear == 2):
+        elif (gear == 2):
             self.park.config(bg = 'white')
             self.reverse.config(bg = 'white')
             self.neutral.config(bg = 'gray')
             self.drive.config(bg = 'white')
             self.low.config(bg = 'white')
-        elif (self.gear == 3):
+        elif (gear == 3):
             self.park.config(bg = 'white')
             self.reverse.config(bg = 'white')
             self.neutral.config(bg = 'white')
             self.drive.config(bg = 'gray')
             self.low.config(bg = 'white')
-        elif (self.gear == 4):
+        elif (gear == 4):
             self.park.config(bg = 'white')
             self.reverse.config(bg = 'white')
             self.neutral.config(bg = 'white')
@@ -135,37 +139,38 @@ class DashBoard(object):
 
 
     def update_Voltage(self):
-        if (self.voltage >= 56):
+        global voltage
+        if (voltage >= 56):
             self.label100.config(bg = "green")
             self.label80.config(bg = "green")
             self.label60.config(bg = "green")
             self.label40.config(bg = "green")
             self.label20.config(bg = "green")
-        elif (self.voltage < 56  and self.voltage >= 54):
+        elif (voltage < 56 and voltage >= 54):
             self.label100.config(bg = "gray")
             self.label80.config(bg = "green")
             self.label60.config(bg = "green")
             self.label40.config(bg = "green")
             self.label20.config(bg = "green")
-        elif (self.voltage < 54 and self.voltage >= 52):
+        elif (voltage < 54 and voltage >= 52):
             self.label100.config(bg = "gray")
             self.label80.config(bg = "gray")
             self.label60.config(bg = "green")
             self.label40.config(bg = "green")
             self.label20.config(bg = "green")
-        elif (self.voltage < 52 and self.voltage >= 50):
+        elif (voltage < 52 and voltage >= 50):
             self.label100.config(bg = "gray")
             self.label80.config(bg = "gray")
             self.label60.config(bg = "gray")
             self.label40.config(bg = "green")
             self.label20.config(bg = "green")
-        elif (self.voltage < 50 and self.voltage >= 48):
+        elif (voltage < 50 and voltage >= 48):
             self.label100.config(bg = "gray")
             self.label80.config(bg = "gray")
             self.label60.config(bg = "gray")
             self.label40.config(bg = "gray")
             self.label20.config(bg = "green")
-        elif ( self.voltage < 48 ):
+        elif ( voltage < 48 ):
             self.label100.config(bg = "gray")
             self.label80.config(bg = "gray")
             self.label60.config(bg = "gray")
@@ -173,38 +178,39 @@ class DashBoard(object):
             self.label20.config(bg = "gray")    
         
             
-    def update_Temperature(self):       
-        if (self.temp >= 53):
+    def update_Temperature(self):
+        global temp
+        if (temp >= 53):
             self.label100deg.config(bg = "red")
             self.label80deg.config(bg = "red")
             self.label60deg.config(bg = "red")
             self.label40deg.config(bg = "red")
             self.label20deg.config(bg = "red")
-        elif (self.temp<= 53 and self.temp>46):
+        elif (temp<= 53 and temp>46):
             self.label100deg.config(bg = "gray")
             self.label80deg.config(bg = "yellow")
             self.label60deg.config(bg = "yellow")
             self.label40deg.config(bg = "yellow")
             self.label20deg.config(bg = "yellow")
-        elif (self.temp<=46 and self.temp>39):
+        elif (temp<=46 and temp>39):
             self.label100deg.config(bg = "gray")
             self.label80deg.config(bg = "gray")
             self.label60deg.config(bg = "green")
             self.label40deg.config(bg = "green")
             self.label20deg.config(bg = "green")
-        elif (self.temp<=39 and self.temp>32):
+        elif (temp<=39 and temp>32):
             self.label100deg.config(bg = "gray")
             self.label80deg.config(bg = "gray")
             self.label60deg.config(bg = "gray")
             self.label40deg.config(bg = "blue")
             self.label20deg.config(bg = "blue")
-        elif (self.temp<=32 and self.temp>25):
+        elif (temp<=32 and temp>25):
             self.label100deg.config(bg = "gray")
             self.label80deg.config(bg = "gray")
             self.label60deg.config(bg = "gray")
             self.label40deg.config(bg = "gray")
             self.label20deg.config(bg = "blue")
-        elif (self.temp<=25):
+        elif (temp<=25):
             self.label100deg.config(bg = "gray")
             self.label80deg.config(bg = "gray")
             self.label60deg.config(bg = "gray")
@@ -212,41 +218,44 @@ class DashBoard(object):
             self.label20deg.config(bg = "gray")
         
     def update_Speed(self):
-        if self.speed2 != self.speed1:
-            self.speed1 = self.speed2
-            self.labelSpeed.config(text=self.speed2)
-            
+        global speed
+        self.labelSpeed.config(text=speed)
+        
     def start_Read(self):
         #read incoming serial data and assign to variables
         #for now focus on voltage, temp, and speed
         """
         self.gear =
         """
-        data = int(ser.readline().strip())
-        #data = 551111
-        self.speed2 = data % 100
-        self.temp = ((data % 10000) - self.speed2)/100
-        self.voltage = ( data - (self.temp * 100) - self.speed2 )/10000
+        global speed
+        global temp
+        global voltage
+        global ser
+        #data = int(ser.readline().strip())
+        while True:
+            data = int(ser.readline().strip())
+            print(data)
+            speed = data % 100
+            temp = ((data % 10000) - speed)/100
+            voltage = ( data - (temp * 100) - speed )/10000
             
+                        
     def update_GUI(self):
         while (True):
             self.update_Speed()
             self.update_Temperature()
             self.update_Voltage()
-        
-        
+                   
     def start_thread(self):
         self.Read_thread = threading.Thread(target = self.start_Read, name = 'read data', args = ())
         self.Read_thread.setDaemon(True)
         self.Read_thread.start()
             
         self.UpdateGUI_thread = threading.Thread(target = self.update_GUI, name = 'update GUI', args = ())
-        self.UpdateGUI_thread.setDaemon(True)
+        self.UpdateGUI_thread.setDaemon(False)
         self.UpdateGUI_thread.start()
 
 if __name__ == '__main__':
-    ser = serial.Serial("/dev/ttyUSB0", 9600) #change ACM number as found
-    ser.baudrate = 9600
     GPIO.setmode(GPIO.BOARD)
     
     dash = DashBoard()
